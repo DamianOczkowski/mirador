@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import TreeView from '@material-ui/lab/TreeView';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import VisibilityIcon from '@material-ui/icons/Visibility';
 import TreeItem from '@material-ui/lab/TreeItem';
+import clsx from 'clsx';
 import { ScrollTo } from './ScrollTo';
 
 /** */
@@ -32,8 +32,11 @@ export class SidebarIndexTableOfContents extends Component {
     if (node.nodes.length > 0) {
       toggleNode(node.id);
     }
-    // Do not select if there are no canvases listed
-    if (!node.data.getCanvasIds() || node.data.getCanvasIds().length === 0) {
+
+    // Do not select if there are no canvases listed or it has children
+    if (!node.data.getCanvasIds()
+        || node.data.getCanvasIds().length === 0
+        || node.nodes.length > 0) {
       return;
     }
     const target = getStartCanvasId(node);
@@ -57,6 +60,7 @@ export class SidebarIndexTableOfContents extends Component {
 
   /** */
   buildTreeItems(nodes, visibleNodeIds, containerRef, nodeIdToScrollTo) {
+    const { classes } = this.props;
     if (!nodes) {
       return null;
     }
@@ -65,6 +69,13 @@ export class SidebarIndexTableOfContents extends Component {
         <TreeItem
           key={node.id}
           nodeId={node.id}
+          classes={{
+            content: classes.content,
+            group: classes.group,
+            label: classes.label,
+            root: classes.treeItemRoot,
+            selected: classes.selected,
+          }}
           label={(
             <ScrollTo
               containerRef={containerRef}
@@ -72,10 +83,13 @@ export class SidebarIndexTableOfContents extends Component {
               offsetTop={96} // offset for the height of the form above
               scrollTo={nodeIdToScrollTo === node.id}
             >
-              <>
-                {visibleNodeIds.indexOf(node.id) !== -1 && <VisibilityIcon fontSize="small" color="secondary" />}
+              <div
+                className={clsx({
+                  [classes.visibleNode]: visibleNodeIds.indexOf(node.id) !== -1,
+                })}
+              >
                 {node.label}
-              </>
+              </div>
             </ScrollTo>
           )}
           onClick={() => this.selectTreeItem(node)}
@@ -106,8 +120,8 @@ export class SidebarIndexTableOfContents extends Component {
       <>
         <TreeView
           className={classes.root}
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
+          defaultCollapseIcon={<ExpandMoreIcon color="action" />}
+          defaultExpandIcon={<ChevronRightIcon color="action" />}
           defaultEndIcon={<></>}
           expanded={expandedNodeIds}
         >
